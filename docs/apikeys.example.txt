@@ -1,0 +1,12 @@
+# Copy this file to docs/apikeys.txt and fill in your secrets.
+# Do NOT commit docs/apikeys.txt to the repo.
+
+OPENAI_API_KEY=
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+POSTHOG_PROJECT_KEY=
+SENTRY_DSN=
+
+# Optional (for deep links if using Firebase Dynamic Links)
+FIREBASE_DYNAMIC_LINK_DOMAIN=
+ANDROID_PACKAGE_NAME=
