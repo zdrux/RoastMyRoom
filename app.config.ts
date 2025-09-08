@@ -22,6 +22,7 @@ function parseKeys(): KV {
 
 export default () => {
   const env = parseKeys()
+  const fromEnv = (k: string) => (process.env[k] ?? env[k] ?? '')
   return {
     expo: {
       name: 'Roast My Room',
@@ -39,7 +40,7 @@ export default () => {
       ],
       platforms: ['android'],
       android: {
-        package: env.ANDROID_PACKAGE_NAME || 'com.roastmyroom.app',
+        package: (fromEnv('ANDROID_PACKAGE_NAME') || 'com.roastmyroom.app') as string,
         // Explicitly request Play Billing permission for purchases
         permissions: ['com.android.vending.BILLING'],
         // Ensure deep links with our custom scheme are routed back
@@ -50,7 +51,7 @@ export default () => {
             data: [
               { scheme: 'roastmyroom', path: '/auth-callback' },
               // Dev Client sometimes uses the package name as scheme
-              { scheme: env.ANDROID_PACKAGE_NAME || 'com.roastmyroom.app', path: '/auth-callback' }
+              { scheme: (fromEnv('ANDROID_PACKAGE_NAME') || 'com.roastmyroom.app') as string, path: '/auth-callback' }
             ],
             category: ['BROWSABLE', 'DEFAULT']
           }
@@ -64,12 +65,12 @@ export default () => {
         }
       },
       extra: {
-        OPENAI_API_KEY: env.OPENAI_API_KEY || '',
-        SUPABASE_URL: env.SUPABASE_URL || '',
-        SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
-        GOOGLE_WEB_CLIENT_ID: env.GOOGLE_WEB_CLIENT_ID || '',
-        POSTHOG_PROJECT_KEY: env.POSTHOG_PROJECT_KEY || '',
-        SENTRY_DSN: env.SENTRY_DSN || '',
+        OPENAI_API_KEY: fromEnv('OPENAI_API_KEY'),
+        SUPABASE_URL: fromEnv('SUPABASE_URL'),
+        SUPABASE_ANON_KEY: fromEnv('SUPABASE_ANON_KEY'),
+        GOOGLE_WEB_CLIENT_ID: fromEnv('GOOGLE_WEB_CLIENT_ID'),
+        POSTHOG_PROJECT_KEY: fromEnv('POSTHOG_PROJECT_KEY'),
+        SENTRY_DSN: fromEnv('SENTRY_DSN'),
         eas: {
           projectId: '8af660f9-9944-4f93-96ea-c433dc7acc1f'
         }
