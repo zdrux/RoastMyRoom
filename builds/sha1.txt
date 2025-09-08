@@ -1,0 +1,21 @@
+Owner: CN=, OU=, O=, L=, ST=, C=US
+Issuer: CN=, OU=, O=, L=, ST=, C=US
+Serial number: 44c3942cca1d951a
+Valid from: Sun Sep 07 15:58:45 EDT 2025 until: Thu Jan 23 14:58:45 EST 2053
+Certificate fingerprints:
+	 SHA1: DD:2F:57:A8:A8:82:3E:B6:BE:CC:A2:F1:F7:29:E8:0F:40:B4:E0:7E
+	 SHA256: 7A:98:61:83:1C:99:6C:CD:19:1D:1A:55:6F:7A:7A:96:8E:2A:1E:31:B6:5C:3A:54:EE:31:8F:27:5F:AB:81:72
+Signature algorithm name: SHA256withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: 8D 05 47 1F D2 71 3F 32   68 46 31 EA 12 94 FA 21  ..G..q?2hF1....!
+0010: 11 4E 13 61                                        .N.a
+]
+]
+

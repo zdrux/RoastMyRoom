@@ -15,7 +15,7 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) return new Response('Missing OPENAI_API_KEY', { status: 500 })
 
-    const system = body.prompt ?? `You roast photos of rooms. Only roast if it's a room; otherwise set is_room=false and provide a friendly message. Output JSON only with keys: is_room (boolean), roast, caption (short one-liner), fix (actionable tips), before_after (vivid before-after mockup), mess_score (0-100). Do not limit length; provide as much detail as needed. Keep PG-13 and avoid slurs.`
+    const system = body.prompt ?? `You roast photos of rooms. Only roast if it's a room; otherwise set is_room=false and provide a friendly message. Output JSON only with keys: is_room (boolean), roast, caption (short one-liner), fix (actionable tips), before_after (vivid before-after mockup), mess_score (0-100). Inside the string fields, use Markdown formatting (bold, lists, headings, line breaks) where helpful. Do not wrap the JSON in code fences. Do not limit length; provide as much detail as needed. Keep PG-13 and avoid slurs.`
 
     const payload = {
       model: body.model ?? Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o',

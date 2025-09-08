@@ -8,10 +8,12 @@ import { useRoastStore } from '../lib/store'
 import { colors } from '../lib/theme'
 import { PrimaryButton, OutlineButton } from '../components/Buttons'
 import ProfileButton from '../components/ProfileButton'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function Capture() {
   const [uri, setUri] = useState<string | null>(null)
   const setImageUri = useRoastStore((s) => s.setImageUri)
+  const insets = useSafeAreaInsets()
 
   async function pickFromCamera() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync()
@@ -32,7 +34,7 @@ export default function Capture() {
   }
 
   return (
-    <LinearGradient colors={["#FAFAFF", "#FFF7F7"]} style={styles.container}>
+    <LinearGradient colors={["#FAFAFF", "#FFF7F7"]} style={[styles.container, { paddingBottom: 18 + (insets.bottom || 0) }]}>
       <ProfileButton />
       <View style={styles.header}>
         <Text style={styles.title}>Ready to Get Roasted?</Text>
@@ -52,7 +54,7 @@ export default function Capture() {
         <OutlineButton title="Upload from Gallery" icon="cloud-upload" onPress={pickFromGallery} />
       </View>
       <Text style={styles.tip}><Text style={{ fontWeight: '900' }}>Tip:</Text> Better lighting = better roasts</Text>
-      <TouchableOpacity disabled={!uri} style={[styles.continue, !uri && { opacity: 0.5 }]} onPress={continueNext}>
+      <TouchableOpacity disabled={!uri} style={[styles.continue, { marginBottom: (insets.bottom || 0) }, !uri && { opacity: 0.5 }]} onPress={continueNext}>
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
     </LinearGradient>
