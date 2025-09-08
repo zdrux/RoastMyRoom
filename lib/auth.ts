@@ -37,7 +37,7 @@ export function installAuthCallbackListener() {
     const code = parseCode(url)
     if (code) {
       try {
-        await supabase.auth.exchangeCodeForSession({ code })
+        await supabase!.auth.exchangeCodeForSession(code)
       } catch {
         // ignore; caller flow will surface errors
       }
@@ -60,7 +60,7 @@ export async function getRedirectUrl() {
 export async function signInWithGoogle() {
   if (!supabase) throw new Error('Supabase not configured')
   const useProxy = Constants.appOwnership === 'expo'
-  const redirectTo = AuthSession.makeRedirectUri({ scheme: APP_SCHEME, path: CALLBACK_PATH, useProxy })
+  const redirectTo = (AuthSession as any).makeRedirectUri({ scheme: APP_SCHEME, path: CALLBACK_PATH, useProxy })
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -82,7 +82,7 @@ export async function signInWithGoogle() {
     // In PKCE flow Supabase redirects back with ?code=...
     const code = parseCode(res.url)
     if (code) {
-      const { error: exErr } = await supabase.auth.exchangeCodeForSession({ code })
+      const { error: exErr } = await supabase.auth.exchangeCodeForSession(code)
       if (exErr) throw exErr
     }
   }

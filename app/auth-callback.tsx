@@ -15,7 +15,7 @@ export default function AuthCallback() {
           const u = new URL(url)
           const code = u.searchParams.get('code')
           if (code && supabase) {
-            await supabase.auth.exchangeCodeForSession({ code })
+            await supabase.auth.exchangeCodeForSession(code)
           }
         }
       } catch {}
