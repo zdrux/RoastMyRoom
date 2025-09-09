@@ -22,34 +22,61 @@ function parseKeys(): KV {
 
 export default () => {
   const env = parseKeys()
+  const fromEnv = (k: string) => (process.env[k] ?? env[k] ?? '')
   return {
     expo: {
       name: 'Roast My Room',
       slug: 'roastmyroom',
       version: '0.1.0',
       orientation: 'portrait',
-      icon: './docs/app_logo.png',
+      // Use Play store icon placed under docs/android
+      icon: './docs/android/play_store_512.png',
       scheme: 'roastmyroom',
       userInterfaceStyle: 'automatic',
       plugins: [
         'expo-asset',
-        'expo-font'
+        'expo-font',
+        '@react-native-google-signin/google-signin'
       ],
       platforms: ['android'],
       android: {
-        package: env.ANDROID_PACKAGE_NAME || 'com.roastmyroom.app',
-        permissions: [],
+        package: (fromEnv('ANDROID_PACKAGE_NAME') || 'com.roastmyroom.app') as string,
+        // Explicitly request Play Billing permission for purchases
+        permissions: ['com.android.vending.BILLING'],
+        // Ensure deep links with our custom scheme are routed back
+        // to the app, specifically for the OAuth callback path.
+        intentFilters: [
+          {
+            action: 'VIEW',
+            data: [
+              { scheme: 'roastmyroom', path: '/auth-callback' },
+              // Dev Client sometimes uses the package name as scheme
+              { scheme: (fromEnv('ANDROID_PACKAGE_NAME') || 'com.roastmyroom.app') as string, path: '/auth-callback' }
+            ],
+            category: ['BROWSABLE', 'DEFAULT']
+          }
+        ],
         adaptiveIcon: {
-          foregroundImage: './docs/app_logo.png',
-          backgroundColor: '#000000'
+          // Foreground image; Expo will resize as needed
+          foregroundImage: './docs/android/res/mipmap-xxxhdpi/ic_launcher_foreground.png',
+          backgroundColor: '#000000',
+          // Optional monochrome for Android 13+
+          monochromeImage: './docs/android/res/mipmap-xxxhdpi/ic_launcher_monochrome.png'
         }
       },
       extra: {
-        OPENAI_API_KEY: env.OPENAI_API_KEY || '',
-        SUPABASE_URL: env.SUPABASE_URL || '',
-        SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
-        POSTHOG_PROJECT_KEY: env.POSTHOG_PROJECT_KEY || '',
-        SENTRY_DSN: env.SENTRY_DSN || ''
+        OPENAI_API_KEY: fromEnv('OPENAI_API_KEY'),
+        SUPABASE_URL: fromEnv('SUPABASE_URL'),
+        SUPABASE_ANON_KEY: fromEnv('SUPABASE_ANON_KEY'),
+        GOOGLE_WEB_CLIENT_ID: fromEnv('GOOGLE_WEB_CLIENT_ID'),
+        // Enable to get verbose auth logs and to disable
+        // automatic fallback to web OAuth on native errors.
+        DEBUG_AUTH: fromEnv('DEBUG_AUTH'),
+        POSTHOG_PROJECT_KEY: fromEnv('POSTHOG_PROJECT_KEY'),
+        SENTRY_DSN: fromEnv('SENTRY_DSN'),
+        eas: {
+          projectId: '8af660f9-9944-4f93-96ea-c433dc7acc1f'
+        }
       }
     }
   }

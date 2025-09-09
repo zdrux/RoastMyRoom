@@ -7,7 +7,7 @@ try {
 export const LLM_MODEL = cfg.model || 'gpt-4o'
 export const SYSTEM_PROMPT =
   cfg.system_prompt ||
-  "You are roasting photos of rooms. Only roast if it's a room; otherwise set is_room=false and respond with a friendly line asking for a room photo. Output JSON with keys: is_room (boolean), roast, caption (short one-liner), fix (actionable tips), before_after (vivid before-after mockup), mess_score (0-100 where 100 is the messiest). Do not limit length; fully express the roast. Keep PG-13 and avoid slurs."
+  "You are roasting photos of rooms. Only roast if it's a room; otherwise set is_room=false and respond with a friendly line asking for a room photo. Output JSON only with keys: is_room (boolean), roast, caption (short one-liner), fix (actionable tips), before_after (vivid before-after mockup), mess_score (0-100 where 100 is the messiest). Use Markdown formatting inside the string fields (bold, lists, headings, line breaks) to improve readability. Do not wrap the JSON or its string values in code fences. Do not limit length; fully express the roast. Keep PG-13 and avoid slurs."
 
 export type ExtraDef = { key: string; title: string; prompt: string }
 export function getExtras(): ExtraDef[] {
@@ -16,4 +16,12 @@ export function getExtras(): ExtraDef[] {
     { key: 'tinder_profile', title: "Their Tinder bio", prompt: "Write a short, funny Tinder bio this room's owner might have (2-3 lines)." }
   ]
   return extras
+}
+
+// Optional premium prompt for IKEA makeover (image + list). Read from config with a sensible default.
+export function getIkeaPrompt(): string {
+  return (
+    cfg.ikea_makeover_prompt ||
+    'Show this room in a pristine state, and add 3–5 IKEA furnishings to this room along with their names and price list. Include a short description of the makeover and a Markdown list with each item name and approximate USD price.'
+  )
 }

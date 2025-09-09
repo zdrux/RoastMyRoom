@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
 import { Ionicons } from '@expo/vector-icons'
@@ -7,11 +7,40 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { useRoastStore } from '../lib/store'
 import { generateRoast } from '../lib/roast'
+import { saveRoast } from '../lib/persist'
 
 export default function Generating() {
   const imageUri = useRoastStore((s) => s.imageUri)
   const setRoast = useRoastStore((s) => s.setRoast)
   const setChat = useRoastStore((s) => s.setChat)
+  const [idx, setIdx] = useState(0)
+  const phrases = useMemo(() => {
+    const arr = [
+      'Sharpening insult skewers...',
+      'Marinating the snark...',
+      'Skimming grease off the punchlines...',
+      'Toasting your ego, lightly...',
+      'Adding extra burn for flavor...',
+      'Roast level: medium savage...',
+      'Turning on the ventilation—this might smoke...',
+      'Stoking the coals of judgment...',
+      'Prepping safety goggles—spatter expected...',
+      'Checking fire extinguisher… just in case...',
+      'Measuring scorch marks to code...',
+      'Whipping up a reduction of regret...',
+      'Spreading artisanal shade on thick...',
+      'Asking the smoke alarm to stay chill...',
+      'Consulting the pitmaster of pettiness...',
+      'Searing punchlines on cast iron...',
+      'Basting with sarcasm glaze...'
+    ]
+    // Fisher–Yates shuffle once per mount
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    return arr
+  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -21,6 +50,8 @@ export default function Generating() {
       if (mounted) {
         setRoast(out.result)
         setChat(out.chat)
+        // Auto-save locally (and remotely if configured)
+        try { await saveRoast(imageUri, out.result) } catch {}
         router.replace('/result')
       }
     }
@@ -28,12 +59,18 @@ export default function Generating() {
     return () => { mounted = false }
   }, [imageUri])
 
+  // Rotate phrases every ~4s
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % phrases.length), 4000)
+    return () => clearInterval(t)
+  }, [phrases])
+
   return (
     <LinearGradient colors={["#1B0B0E", "#0F1024"]} style={styles.container}>
       <ProfileButton />
       <Flame />
-      <Text style={styles.text}>Preheating the oven...</Text>
-      <Text style={styles.textDim}>Cooking your roast...</Text>
+      <Text style={styles.text}>Preparing your roast...</Text>
+      <Text style={styles.textDim}>{phrases[idx]}</Text>
     </LinearGradient>
   )
 }

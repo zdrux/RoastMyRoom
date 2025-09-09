@@ -64,3 +64,19 @@ export const useCreditsStore = create<CreditsState>((set, get) => ({
     return true
   }
 }))
+
+type DebugState = {
+  logs: string[]
+  visible: boolean
+  addLog: (m: string) => void
+  clear: () => void
+  setVisible: (v: boolean) => void
+}
+
+export const useDebugStore = create<DebugState>((set) => ({
+  logs: [],
+  visible: false,
+  addLog: (m) => set((s) => ({ logs: [...s.logs.slice(-199), `${new Date().toISOString()} ${m}`] })),
+  clear: () => set({ logs: [] }),
+  setVisible: (v) => set({ visible: v })
+}))
