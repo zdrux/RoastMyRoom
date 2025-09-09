@@ -13,5 +13,5 @@
                        "prompt":  "What would their Tinder bio look like? Use emojis where appropriate."
                    }
                ],
-    "ikea_makeover_prompt": "Show this room in a pristine state, and add 3-5 IKEA furnishings to this room along with their names and price list. Include a short description of the makeover and a Markdown(MD format) list with each item name and approximate USD price and link. Don't offer further chat suggestions"
+    "ikea_makeover_prompt": "Generate a picture of this room in clean condition. Add 3-5 IKEA furnishings to this room along with their names and price list. Include a short description of the makeover and a Markdown(MD format) list with each item name and approximate USD price and link. Use Markdown (MD) format response and Don't offer further chat suggestions."
 }

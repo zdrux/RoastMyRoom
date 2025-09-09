@@ -8,6 +8,7 @@ export const SUPABASE_ANON_KEY = String(extra.SUPABASE_ANON_KEY || '')
 export const POSTHOG_PROJECT_KEY = String(extra.POSTHOG_PROJECT_KEY || '')
 export const SENTRY_DSN = String(extra.SENTRY_DSN || '')
 export const GOOGLE_WEB_CLIENT_ID = String(extra.GOOGLE_WEB_CLIENT_ID || '')
+export const DEBUG_AUTH = !!(extra.DEBUG_AUTH && String(extra.DEBUG_AUTH).toLowerCase() !== 'false' && String(extra.DEBUG_AUTH).trim() !== '')
 
 export const POSTER = {
   width: 1080,

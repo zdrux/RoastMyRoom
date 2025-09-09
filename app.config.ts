@@ -69,6 +69,9 @@ export default () => {
         SUPABASE_URL: fromEnv('SUPABASE_URL'),
         SUPABASE_ANON_KEY: fromEnv('SUPABASE_ANON_KEY'),
         GOOGLE_WEB_CLIENT_ID: fromEnv('GOOGLE_WEB_CLIENT_ID'),
+        // Enable to get verbose auth logs and to disable
+        // automatic fallback to web OAuth on native errors.
+        DEBUG_AUTH: fromEnv('DEBUG_AUTH'),
         POSTHOG_PROJECT_KEY: fromEnv('POSTHOG_PROJECT_KEY'),
         SENTRY_DSN: fromEnv('SENTRY_DSN'),
         eas: {

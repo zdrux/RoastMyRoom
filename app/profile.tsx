@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native'
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable, Alert } from 'react-native'
 import { useEffect, useState } from 'react'
 import { useCreditsStore, useRoastStore } from '../lib/store'
 import { fetchSavedRoasts } from '../lib/persist'
@@ -47,17 +47,34 @@ export default function Profile() {
       {email ? (
         <View style={{ marginTop: 8 }}>
           <Text style={styles.item}>Signed in as: {email}</Text>
-          <TouchableOpacity style={styles.btn} onPress={async () => { await signOut(); setEmail(null) }}>
+          <TouchableOpacity style={styles.btn} onPress={async () => { await signOut({ disconnect: true }); setEmail(null) }}>
             <Text style={styles.btnText}>Sign out</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <TouchableOpacity style={styles.btn} onPress={async () => {
           try {
-            // Try native Google first, then fall back to browser-based OAuth.
+            // Try native Google first.
             await signInWithGoogleNative()
-          } catch {
-            try { await signInWithGoogle() } catch {}
+          } catch (e: any) {
+            // Only fall back on specific benign cases; otherwise surface error for debugging.
+            const code = e?.code || e?.status || ''
+            const msg = e?.message || 'Sign-in failed'
+            // eslint-disable-next-line no-console
+            console.log('[auth] native error', code, msg)
+            try { Alert.alert('Google Sign-in (native) failed', `${code || 'ERROR'}\n${msg}`) } catch {}
+            // Fall back only if user cancelled or Play Services missing.
+            // If DEBUG_AUTH is enabled, do NOT fall back — keep the native error visible.
+            if (code === '12501' || code === 'SIGN_IN_CANCELLED') {
+              // user cancelled
+              return
+            }
+            if ((global as any).__DEBUG_AUTH__) return
+            // Attempt web fallback only when debug overlay is off
+            try { await signInWithGoogle() } catch (e2) {
+              // eslint-disable-next-line no-console
+              console.log('[auth] web fallback error', e2)
+            }
           }
           try { const u = await supabase?.auth.getUser(); setEmail(u?.data.user?.email ?? null) } catch {}
         }}>

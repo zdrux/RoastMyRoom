@@ -3,8 +3,23 @@ import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser'
 import * as AuthSession from 'expo-auth-session'
 import Constants from 'expo-constants'
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
-import { GOOGLE_WEB_CLIENT_ID } from './config'
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
+import { GOOGLE_WEB_CLIENT_ID, DEBUG_AUTH } from './config'
+import { useDebugStore } from './store'
+
+function d(...args: any[]) {
+  if (!DEBUG_AUTH) return
+  try {
+    // eslint-disable-next-line no-console
+    console.log('[auth]', ...args)
+  } catch {}
+  try {
+    const line = args
+      .map((a) => (typeof a === 'string' ? a : (() => { try { return JSON.stringify(a) } catch { return String(a) } })()))
+      .join(' ')
+    useDebugStore.getState().addLog(line)
+  } catch {}
+}
 
 const CALLBACK_PATH = 'auth-callback'
 const APP_SCHEME = 'roastmyroom'
@@ -91,8 +106,18 @@ export async function signInWithGoogle() {
 let googleConfigured = false
 function ensureGoogleConfigured() {
   if (googleConfigured) return
+  ;(global as any).__DEBUG_AUTH__ = DEBUG_AUTH
+  const pkg = (Constants as any)?.expoConfig?.android?.package || 'unknown'
+  const wcid = GOOGLE_WEB_CLIENT_ID || ''
+  d('Configuring GoogleSignin')
+  d('package:', pkg)
+  d('webClientId length:', wcid.length, 'suffix:', wcid.slice(-16))
+  if (!wcid || !wcid.endsWith('.apps.googleusercontent.com')) {
+    d('WARN: GOOGLE_WEB_CLIENT_ID looks invalid (must be Web client ID)')
+  }
   GoogleSignin.configure({
     webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
+    scopes: ['openid', 'email', 'profile'],
     offlineAccess: false,
     forceCodeForRefreshToken: false
   })
@@ -102,15 +127,68 @@ function ensureGoogleConfigured() {
 export async function signInWithGoogleNative() {
   if (!supabase) throw new Error('Supabase not configured')
   ensureGoogleConfigured()
-  await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
-  const result = await GoogleSignin.signIn()
-  const idToken = (result as any)?.idToken
-  if (!idToken) throw new Error('Google sign-in did not return idToken. Check GOOGLE_WEB_CLIENT_ID.')
-  const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken })
-  if (error) throw error
+  try {
+    const hasPS = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true })
+    d('hasPlayServices:', hasPS)
+    const result: any = await GoogleSignin.signIn()
+    d('Google signIn result keys:', Object.keys(result || {}))
+    let idToken: string | null = null
+    const rType = result?.type
+    if (rType === 'success') {
+      idToken = result?.data?.idToken ?? null
+      // As an additional guard on Android, fetch tokens explicitly if needed
+      if (!idToken) {
+        try {
+          const toks = await GoogleSignin.getTokens()
+          idToken = (toks as any)?.idToken || null
+          d('Fetched tokens via getTokens(). idToken present:', !!idToken)
+        } catch (e) {
+          d('getTokens() failed')
+        }
+      }
+    } else if (rType === 'cancelled') {
+      const msg = 'User cancelled Google sign-in'
+      d('Sign-in cancelled by user')
+      throw Object.assign(new Error(msg), { code: 'SIGN_IN_CANCELLED' })
+    } else {
+      d('Unexpected signIn() result type:', rType)
+    }
+    d('idToken present:', !!idToken)
+    if (!idToken) {
+      const msg = 'Google sign-in did not return idToken. Check GOOGLE_WEB_CLIENT_ID (must be Web client ID) and Android OAuth SHA-1.'
+      throw Object.assign(new Error(msg), { code: 'NO_ID_TOKEN' })
+    }
+    const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken })
+    if (error) throw Object.assign(error, { code: 'SUPABASE_EXCHANGE_ERROR' })
+  } catch (e: any) {
+    // Surface Google Sign-In error codes when possible
+    const code = e?.code || e?.status || e?.statusCode || 'UNKNOWN'
+    d('Native Google sign-in failed:', code, e?.message || String(e))
+    try { d('Error payload:', JSON.stringify(e)) } catch {}
+    throw e
+  }
 }
 
-export async function signOut() {
+export async function signOut(opts?: { disconnect?: boolean }) {
+  try {
+    ensureGoogleConfigured()
+    // Sign out from the native module so the next sign-in shows the picker.
+    await GoogleSignin.signOut()
+    if (opts?.disconnect) {
+      // Revoke granted scopes to fully disconnect this app from the account
+      // which further increases the chance of seeing the account chooser.
+      try {
+        // Best-effort clear cached access token then revoke
+        try {
+          const toks: any = await GoogleSignin.getTokens()
+          if (toks?.accessToken) {
+            await GoogleSignin.clearCachedAccessToken(toks.accessToken)
+          }
+        } catch {}
+        await GoogleSignin.revokeAccess()
+      } catch {}
+    }
+  } catch {}
   return supabase?.auth.signOut()
 }
 
