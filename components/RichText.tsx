@@ -14,6 +14,9 @@ export default function RichText({ text, style }: Props) {
     // Render inline markdown in a simple multi-pass pipeline.
     type Node = string | React.ReactNode
     let nodes: Node[] = [s]
+    // Ensure keys are unique across all inline passes for this paragraph.
+    let inlineKey = 0
+    const nextKey = () => `md-${inlineKey++}`
 
     const apply = (arr: Node[], regex: RegExp, render: (m: RegExpExecArray, key: string) => React.ReactNode): Node[] => {
       const out: Node[] = []
@@ -24,7 +27,7 @@ export default function RichText({ text, style }: Props) {
         regex.lastIndex = 0
         while ((m = regex.exec(n))) {
           if (m.index > last) out.push(n.slice(last, m.index))
-          out.push(render(m, `md-${out.length}`))
+          out.push(render(m, nextKey()))
           last = m.index + m[0].length
         }
         if (last < n.length) out.push(n.slice(last))
