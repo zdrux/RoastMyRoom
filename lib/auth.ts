@@ -4,22 +4,9 @@ import * as WebBrowser from 'expo-web-browser'
 import * as AuthSession from 'expo-auth-session'
 import Constants from 'expo-constants'
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin'
-import { GOOGLE_WEB_CLIENT_ID, DEBUG_AUTH } from './config'
-import { useDebugStore } from './store'
+import { GOOGLE_WEB_CLIENT_ID } from './config'
 
-function d(...args: any[]) {
-  if (!DEBUG_AUTH) return
-  try {
-    // eslint-disable-next-line no-console
-    console.log('[auth]', ...args)
-  } catch {}
-  try {
-    const line = args
-      .map((a) => (typeof a === 'string' ? a : (() => { try { return JSON.stringify(a) } catch { return String(a) } })()))
-      .join(' ')
-    useDebugStore.getState().addLog(line)
-  } catch {}
-}
+function d(..._args: any[]) { /* no-op */ }
 
 const CALLBACK_PATH = 'auth-callback'
 const APP_SCHEME = 'roastmyroom'
@@ -106,7 +93,6 @@ export async function signInWithGoogle() {
 let googleConfigured = false
 function ensureGoogleConfigured() {
   if (googleConfigured) return
-  ;(global as any).__DEBUG_AUTH__ = DEBUG_AUTH
   const pkg = (Constants as any)?.expoConfig?.android?.package || 'unknown'
   const wcid = GOOGLE_WEB_CLIENT_ID || ''
   d('Configuring GoogleSignin')

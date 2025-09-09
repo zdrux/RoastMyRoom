@@ -64,12 +64,10 @@ export default function Profile() {
             console.log('[auth] native error', code, msg)
             try { Alert.alert('Google Sign-in (native) failed', `${code || 'ERROR'}\n${msg}`) } catch {}
             // Fall back only if user cancelled or Play Services missing.
-            // If DEBUG_AUTH is enabled, do NOT fall back — keep the native error visible.
             if (code === '12501' || code === 'SIGN_IN_CANCELLED') {
               // user cancelled
               return
             }
-            if ((global as any).__DEBUG_AUTH__) return
             // Attempt web fallback only when debug overlay is off
             try { await signInWithGoogle() } catch (e2) {
               // eslint-disable-next-line no-console
